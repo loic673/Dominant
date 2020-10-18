@@ -1,6 +1,25 @@
 import sys, os, time
 import networkx as nx
 
+#### UTILS ####
+
+def order_cycle_graph(g) :
+    """
+    sort the graph according to the succession of nodes
+    """
+    result = ["0"] #start with 0 because all the test graphs have a "0", use list(g.nodes)[0] if not
+    result.append(list(g["0"])[0]) # add 1st neigbour
+    while len(result) != g.order() : # while we don't have all nodes sorted
+        neighbours = list(g[result[-1]]) #get last nodes neighbours
+        neighbours.remove(result[-2]) # remove sorted neighbour
+        result.append(neighbours[0]) # add last neighbour
+    return result
+
+
+
+
+#### Dominant ####
+
 def dominant(g):
     """
         A Faire:         
@@ -14,22 +33,31 @@ def dominant(g):
 
     neighbors_nb = {}
     for node in all_nodes :
-        neighbors_nb[len(set(g[node]))] = node
+        neighbors_nb[g.degree[node]] = node
 
-    max_node = neighbors_nb[max(neighbors_nb.keys())]
-    dominating_set = {max_node}
-    dominating_set.add(max_node)
-    all_nodes = all_nodes - set(g[max_node]) - {max_node}
+    if len(neighbors_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
 
-    while all_nodes :
+        dominant_set = set()
+        ordered_graph = order_cycle_graph(g)
+        for i in range(0, len(ordered_graph), 3):
+            dominant_set.add(ordered_graph[i])
+        return dominant_set
 
-        neighbors_nb = {}
-        for node in all_nodes :
-            neighbors_nb[len(set(g[node]))] = node
+    else : # greedy algorithm
 
         max_node = neighbors_nb[max(neighbors_nb.keys())]
-        dominating_set.add(max_node)
+        dominating_set = {max_node}
         all_nodes = all_nodes - set(g[max_node]) - {max_node}
+
+        while all_nodes :
+
+            neighbors_nb = {}
+            for node in all_nodes :
+                neighbors_nb[g.degree[node]] = node
+
+            max_node = neighbors_nb[max(neighbors_nb.keys())]
+            dominating_set.add(max_node)
+            all_nodes = all_nodes - set(g[max_node]) - {max_node}
 
     return dominating_set
 
