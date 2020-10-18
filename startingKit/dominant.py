@@ -15,6 +15,12 @@ def order_cycle_graph(g) :
         result.append(neighbours[0]) # add last neighbour
     return result
 
+def cycle_dominant(g):
+    dominant_set = set()
+    ordered_graph = order_cycle_graph(g)
+    for i in range(0, len(ordered_graph), 3):
+        dominant_set.add(ordered_graph[i])
+    return dominant_set
 
 
 
@@ -28,26 +34,21 @@ def dominant(g):
 
         :param g: le graphe est donné dans le format networkx : https://networkx.github.io/documentation/stable/reference/classes/graph.html
     """
-
     all_nodes = set(g)
-
     neighbors_nb = {}
     for node in all_nodes :
         neighbors_nb[g.degree[node]] = node
 
     if len(neighbors_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
 
-        dominant_set = set()
-        ordered_graph = order_cycle_graph(g)
-        for i in range(0, len(ordered_graph), 3):
-            dominant_set.add(ordered_graph[i])
-        return dominant_set
+        return cycle_dominant(g)
 
     else : # greedy algorithm
 
         max_node = neighbors_nb[max(neighbors_nb.keys())]
         dominating_set = {max_node}
         all_nodes = all_nodes - set(g[max_node]) - {max_node}
+        g = g.subgraph(all_nodes)
 
         while all_nodes :
 
@@ -55,9 +56,14 @@ def dominant(g):
             for node in all_nodes :
                 neighbors_nb[g.degree[node]] = node
 
+            if len(neighbors_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
+                dominating_set |= cycle_dominant(g)
+                return dominating_set
+
             max_node = neighbors_nb[max(neighbors_nb.keys())]
             dominating_set.add(max_node)
             all_nodes = all_nodes - set(g[max_node]) - {max_node}
+            g = g.subgraph(all_nodes)
 
     return dominating_set
 
