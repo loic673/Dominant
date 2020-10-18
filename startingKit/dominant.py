@@ -7,8 +7,9 @@ def order_cycle_graph(g) :
     """
     sort the graph according to the succession of nodes
     """
-    result = ["0"] #start with 0 because all the test graphs have a "0", use list(g.nodes)[0] if not
-    result.append(list(g["0"])[0]) # add 1st neigbour
+    first_node = list(g.nodes)[0] #take 1st node
+    result = [first_node] # result list
+    result.append(list(g[first_node])[0]) # add 1st neigbour
     while len(result) != g.order() : # while we don't have all nodes sorted
         neighbours = list(g[result[-1]]) #get last nodes neighbours
         neighbours.remove(result[-2]) # remove sorted neighbour
