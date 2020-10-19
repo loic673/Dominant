@@ -35,33 +35,57 @@ def dominant(g):
 
         :param g: le graphe est donné dans le format networkx : https://networkx.github.io/documentation/stable/reference/classes/graph.html
     """
+    paw = False
+
     all_nodes = set(g)
-    neighbors_nb = {}
+    neighbours_nb = {}
     for node in all_nodes :
-        neighbors_nb[g.degree[node]] = node
+        neighbours_nb[g.degree[node]] = node
 
-    if len(neighbors_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
+    if g.number_of_edges() == 2*g.number_of_nodes() - 4 : #Paw graph case
+        paw = True
 
+    if len(neighbours_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
         return cycle_dominant(g)
 
     else : # greedy algorithm
 
-        max_node = neighbors_nb[max(neighbors_nb.keys())]
+        if paw :
+            keys = list(neighbours_nb.keys())
+            keys.sort()
+            try :
+                max_neighbours = keys[-2]
+            except :# if len(max_neighbours) == 1
+                max_neighbours = keys[-1]
+        else :
+            max_neighbours = max(neighbours_nb.keys())
+
+        max_node = neighbours_nb[max_neighbours]        
         dominating_set = {max_node}
         all_nodes = all_nodes - set(g[max_node]) - {max_node}
         g = g.subgraph(all_nodes)
 
         while all_nodes :
 
-            neighbors_nb = {}
+            neighbours_nb = {}
             for node in all_nodes :
-                neighbors_nb[g.degree[node]] = node
+                neighbours_nb[g.degree[node]] = node
 
-            if len(neighbors_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
+            if len(neighbours_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
                 dominating_set |= cycle_dominant(g)
                 return dominating_set
 
-            max_node = neighbors_nb[max(neighbors_nb.keys())]
+            if paw :
+                keys = list(neighbours_nb.keys())
+                keys.sort()
+                try :
+                    max_neighbours = keys[-2]
+                except :# if len(max_neighbours) == 1
+                    max_neighbours = keys[-1]
+            else :
+                max_neighbours = max(neighbours_nb.keys())
+
+            max_node = neighbours_nb[max_neighbours]
             dominating_set.add(max_node)
             all_nodes = all_nodes - set(g[max_node]) - {max_node}
             g = g.subgraph(all_nodes)
