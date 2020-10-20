@@ -38,38 +38,26 @@ def dominant(g):
     paw = False
 
     all_nodes = set(g)
-    neighbours_nb = {}
+    neighbours_nb = {} # Dict where the key is the number of neighbours and the item is the node
     for node in all_nodes :
         neighbours_nb[g.degree[node]] = node
-
-    # if g.number_of_edges() == 2*g.number_of_nodes() - 4 : #Paw graph case
-    #     paw = True
 
     if len(neighbours_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
         return cycle_dominant(g)
 
     else : # greedy algorithm
 
-        if paw :
-            keys = list(neighbours_nb.keys())
-            keys.sort()
-            try :
-                max_neighbours = keys[-2]
-            except :# if len(max_neighbours) == 1
-                max_neighbours = keys[-1]
-            paw = False
-        else :
-            max_neighbours = max(neighbours_nb.keys())
-
+        max_neighbours = max(neighbours_nb.keys()) #node with the most neighbours
         max_node = neighbours_nb[max_neighbours]        
         dominating_set = {max_node}
-        not_selected = all_nodes - {max_node}
-        all_nodes = all_nodes - set(g[max_node]) - {max_node}
-        g = g.subgraph(not_selected)
+
+        not_selected = all_nodes - {max_node} #nodes not selected for dominant
+        all_nodes = all_nodes - set(g[max_node]) - {max_node} #nodes not "dominated"
+        g = g.subgraph(not_selected) # graph remaining (without dominant nodes)
 
         while all_nodes :
 
-            neighbours_nb = {}
+            neighbours_nb = {} # same dict as before but this time we don't count nodes "dominated"
             for node in not_selected :
                 remaining_reighbours = []
                 for node2 in list(g[node]) :
@@ -77,20 +65,12 @@ def dominant(g):
                         remaining_reighbours.append(node2)
                 neighbours_nb[len(remaining_reighbours)] = node
 
+
             if len(neighbours_nb) == 1 and (g.number_of_nodes() == g.number_of_edges()) : # Cycle graph case
                 dominating_set |= cycle_dominant(g)
                 return dominating_set
 
-            if paw :
-                keys = list(neighbours_nb.keys())
-                keys.sort()
-                try :
-                    max_neighbours = keys[-2]
-                except :# if len(max_neighbours) == 1
-                    max_neighbours = keys[-1]
-            else :
-                max_neighbours = max(neighbours_nb.keys())
-
+            max_neighbours = max(neighbours_nb.keys())
             max_node = neighbours_nb[max_neighbours]
             dominating_set.add(max_node)
 
